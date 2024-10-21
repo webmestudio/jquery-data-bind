@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Data Bind Example</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <!-- Data Binding untuk Section 1 -->
+    <h1 data-bind-text="section1.title">Default Title Section 1</h1>
+    <p data-bind-html="section1.description">Default description for Section 1.</p>
+    <span data-bind-text="section1.author">Author Name Section 1</span>
+
+    <!-- Data Binding tanpa Section -->
+    <h1 data-bind-text="title">Default Title (No Section)</h1>
+    <p data-bind-html="description">Default description (No Section).</p>
+    <span data-bind-text="author">Author Name (No Section)</span>
+
+    <script>
+        $(document).ready(function () {
+            // Fungsi untuk data binding berdasarkan atribut data-bind-text dan data-bind-html
+            function dataBind(response, section = null) {
+                // Update elemen dengan data-bind-text
+                $("[data-bind-text]").each(function() {
+                    var bindAttr = $(this).attr('data-bind-text'); // Ambil nilai data-bind-text
+                    var splitAttr = bindAttr.split('.'); // Pisahkan antara section dan key
+
+                    var key = section ? splitAttr[1] : bindAttr; // Ambil key, sesuaikan dengan section
+                    var sectionKey = section ? splitAttr[0] : null; // Tentukan section jika ada
+                    
+                    // Jika section disertakan, pastikan sesuai dengan section di data-bind-text
+                    if (!section || (section && sectionKey === section)) {
+                        if (response && response.hasOwnProperty(key)) { // Jika key ada di response
+                            $(this).text(response[key]); // Update teks
+                        } else {
+                            // Jika tidak ada data, kembali ke nilai default
+                            var defaultText = $(this).attr('data-default') || $(this).text();
+                            $(this).text(defaultText); // Kembalikan ke default
+                        }
+                    }
+                });
+
+                // Update elemen dengan data-bind-html
+                $("[data-bind-html]").each(function() {
+                    var bindAttr = $(this).attr('data-bind-html'); // Ambil nilai data-bind-html
+                    var splitAttr = bindAttr.split('.'); // Pisahkan antara section dan key
+
+                    var key = section ? splitAttr[1] : bindAttr; // Ambil key, sesuaikan dengan section
+                    var sectionKey = section ? splitAttr[0] : null; // Tentukan section jika ada
+                    
+                    // Jika section disertakan, pastikan sesuai dengan section di data-bind-html
+                    if (!section || (section && sectionKey === section)) {
+                        if (response && response.hasOwnProperty(key)) { // Jika key ada di response
+                            $(this).html(response[key]); // Update HTML
+                        } else {
+                            // Jika tidak ada data, kembali ke nilai default
+                            var defaultHtml = $(this).attr('data-default') || $(this).html();
+                            $(this).html(defaultHtml); // Kembalikan ke default
+                        }
+                    }
+                });
+            }
+
+            // Simulasi AJAX request untuk section1
+            $.ajax({
+                url: 'https://jsonplaceholder.typicode.com/posts/1', // API Dummy untuk Section 1
+                type: 'GET',
+                success: function(response) {
+                    var data = {
+                        title: response.title,
+                        description: "<b>Description fetched for Section 1 with HTML.</b>", // Example HTML content
+                        author: "John Doe"
+                    };
+                    dataBind(data, 'section1'); // Panggil dataBind dengan section1 dan respons data
+                },
+                error: function() {
+                    console.log('Error fetching data for Section 1');
+                    // Jika terjadi error, kembalikan nilai ke default
+                    dataBind(null, 'section1');
+                }
+            });
+
+            // Simulasi AJAX request untuk respons tanpa section
+            $.ajax({
+                url: 'https://jsonplaceholder.typicode.com/posts/2', // API Dummy tanpa Section
+                type: 'GET',
+                success: function(response) {
+                    var data = {
+                        title: response.title,
+                        description: "<i>Description fetched without Section with HTML.</i>", // Example HTML content
+                        author: "Jane Doe"
+                    };
+                    dataBind(data); // Panggil dataBind tanpa section
+                },
+                error: function() {
+                    console.log('Error fetching data without Section');
+                    // Jika terjadi error, kembalikan nilai ke default
+                    dataBind(null);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
